@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import time
 from typing import Optional
 
 import pandas as pd
@@ -34,14 +35,29 @@ def download_stock_data(config: StockDataConfig, save: bool = True) -> pd.DataFr
     - We clean missing values conservatively and keep corporate action columns because
       they may be useful later for diagnostics or extra features.
     """
-    df = yf.download(
-        tickers=config.ticker,
-        period=config.period,
-        interval=config.interval,
-        auto_adjust=config.auto_adjust,
-        actions=config.actions,
-        progress=False,
-    )
+    df = pd.DataFrame()
+    for _ in range(3):
+        df = yf.download(
+            tickers=config.ticker,
+            period=config.period,
+            interval=config.interval,
+            auto_adjust=config.auto_adjust,
+            actions=config.actions,
+            progress=False,
+            threads=False,
+        )
+        if not df.empty:
+            break
+        time.sleep(2)
+
+    if df.empty:
+        ticker = yf.Ticker(config.ticker)
+        df = ticker.history(
+            period=config.period,
+            interval=config.interval,
+            auto_adjust=config.auto_adjust,
+            actions=config.actions,
+        )
 
     if df.empty:
         raise ValueError(f"No data returned for ticker '{config.ticker}'.")
