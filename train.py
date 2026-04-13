@@ -52,11 +52,15 @@ def ensure_dirs() -> None:
 
 def set_seed(seed: int) -> None:
     import random
-    import tensorflow as tf
 
     random.seed(seed)
     np.random.seed(seed)
-    tf.random.set_seed(seed)
+    try:
+        import tensorflow as tf
+
+        tf.random.set_seed(seed)
+    except ImportError:
+        pass
 
 
 def walk_forward_splits(
