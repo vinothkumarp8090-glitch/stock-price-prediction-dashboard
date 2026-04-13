@@ -317,12 +317,17 @@ def signal_html(direction: int) -> str:
 
 inject_styles()
 
+if "ticker_value" not in st.session_state:
+    st.session_state["ticker_value"] = COMPANY_PRESETS[0]["ticker"]
+
 with st.sidebar:
     st.markdown("### Model Controls")
     preset_options = {f"{item['name']} ({item['ticker']})": item["ticker"] for item in COMPANY_PRESETS}
     selected_company = st.selectbox("Quick Company", options=list(preset_options.keys()), index=0)
-    default_ticker = preset_options[selected_company]
-    ticker = st.text_input("Ticker", value=default_ticker).upper()
+    selected_ticker = preset_options[selected_company]
+    if st.session_state.get("ticker_value") != selected_ticker:
+        st.session_state["ticker_value"] = selected_ticker
+    ticker = st.text_input("Ticker", key="ticker_value").upper()
     mode = st.selectbox(
         "Execution Mode",
         options=["fast_ml", "deep_learning"],
