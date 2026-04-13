@@ -17,12 +17,9 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
 )
-from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
-from tensorflow.keras.models import load_model
 
 from data import get_stock_data
 from features import FEATURE_COLUMNS, add_technical_indicators, create_sequences, fit_transform_sequences, inverse_return_to_price
-from model import get_model_builder
 
 
 ARTIFACT_DIR = Path("artifacts")
@@ -163,6 +160,9 @@ def plot_equity_curve(results_df: pd.DataFrame, ticker: str) -> Tuple[Path, Path
 def train_and_evaluate(config: TrainConfig) -> dict:
     if config.mode == "fast_ml":
         return train_and_evaluate_fast(config)
+
+    from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
+    from model import get_model_builder
 
     ensure_dirs()
     set_seed(config.random_seed)
@@ -461,6 +461,8 @@ def train_and_evaluate_fast(config: TrainConfig) -> dict:
 
 
 def load_saved_models(config: TrainConfig):
+    from tensorflow.keras.models import load_model
+
     regression_model_path = MODEL_DIR / f"{config.ticker}_regression_{config.regression_model_name}.keras"
     classification_model_path = MODEL_DIR / f"{config.ticker}_classification_{config.classification_model_name}.keras"
     return load_model(regression_model_path), load_model(classification_model_path)
